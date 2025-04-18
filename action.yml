@@ -1,0 +1,19 @@
+name: 'Feishu Action'
+description: 'Send customizable notifications to Feishu groups based on GitHub events with i18n and template support'
+author: 'azurepwq'
+branding:
+  icon: 'message-circle'
+  color: 'blue'
+
+inputs:
+  feishu_webhook:
+    description: 'Feishu webhook URL'
+    required: true
+  config_path:
+    description: 'Path to config.yml (default: .github/feishu/config.yml)'
+    required: false
+    default: '.github/feishu/config.yml'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js' 

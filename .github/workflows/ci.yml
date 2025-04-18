@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint || echo "No lint script yet"
+      - run: npm run test
+      - run: npm run coverage
+      - name: Check coverage
+        run: |
+          COVERAGE=$(npx c8 check-coverage --lines 90 --functions 90 --branches 90 --statements 90 || echo "fail")
+          if [[ "$COVERAGE" == "fail" ]]; then
+            echo "::error::Coverage below 90%" && exit 1
+          fi
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./coverage/lcov.info 
