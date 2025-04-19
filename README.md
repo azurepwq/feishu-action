@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-org/feishu-action@v1
+      - uses: azurepwq/feishu-action@v1
         with:
           feishu_webhook: ${{ secrets.FEISHU_WEBHOOK }}
           config_path: .github/feishu/config.yml
