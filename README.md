@@ -22,24 +22,124 @@
 1. 在你的仓库 `.github/workflows/` 下新建 workflow 文件：
 
 ```yaml
-name: Feishu Notify
+name: Feishu Notifications
+
 on:
+  # Trigger on pull request events
   pull_request:
-    types: [opened, synchronize, closed]
-  push:
-  release:
+    types: [opened, closed, reopened, synchronize, ready_for_review]
+  
+  # Trigger on issues
   issues:
+    types: [opened, closed, reopened, assigned]
+  
+  # Trigger on issue comments
+  issue_comment:
+    types: [created]
+  
+  # Trigger on push to main branch
+  push:
+    branches: [main, master]
+  
+  # Trigger on releases
+  release:
+    types: [published, created]
+  
+  # Trigger on repository fork
+  fork:
+  
+  # Trigger on repository star
+  watch:
+    types: [started]
+  
+  # Trigger on workflow run completion
   workflow_run:
+    workflows: ["CI", "Build and Deploy"]
+    types: [completed]
+  
+  # Trigger on branch/tag creation
+  create:
+  
+  # Trigger on branch/tag deletion
+  delete:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: azurepwq/feishu-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Feishu config
+        run: |
+          cat > .github/feishu-config.yml << 'EOL'
+          default:
+            language: en-US
+            style: engineer
+            at: []  # Add user IDs here if needed
+          
+          # PR event configuration
+          pr:
+            opened:
+              template: pr_opened
+              style: engineer
+            closed:
+              template: pr_closed
+              style: engineer
+              
+          # Push event configuration
+          push:
+            template: push_default
+            style: engineer
+            
+          # Issue event configuration
+          issues:
+            opened:
+              template: issue_opened
+              style: engineer
+            closed:
+              template: issue_closed
+              style: engineer
+              
+          # Custom templates
+          templates:
+            pr_opened: "🆕 PR opened: {{ pr.title }} by {{ pr.user.login }} - {{ pr.html_url }}"
+            pr_closed: "✅ PR {{ pr.merged && 'merged' || 'closed' }}: {{ pr.title }} - {{ pr.html_url }}"
+            push_default: "📌 New commit to {{ ref }}: {{ head_commit.message }} by {{ head_commit.author.name }}"
+            issue_opened: "🐛 Issue opened: {{ issue.title }} by {{ issue.user.login }} - {{ issue.html_url }}"
+            issue_closed: "🏁 Issue closed: {{ issue.title }} - {{ issue.html_url }}"
+            comment_default: "💬 New comment by {{ comment.user.login }}: {{ comment.body | truncate(100) }}"
+            fork_default: "🍴 Repository forked by {{ sender.login }} to {{ forkee.full_name }}"
+            star_default: "⭐ Repository starred by {{ sender.login }}"
+            workflow_default: "🔄 Workflow {{ workflow.name }} {{ workflow.conclusion == 'success' ? '✅' : '❌' }}"
+            create_default: "📂 New {{ ref_type }} created: {{ ref }}"
+            delete_default: "🗑️ {{ ref_type }} deleted: {{ ref }}"
+            release_default: "🚀 Release {{ release.tag_name }} published: {{ release.name }}"
+            
+          # Locale settings
+          locales:
+            zh-CN:
+              pr.opened.title: "新PR通知"
+              pr.closed.title: "PR已关闭"
+              push.title: "新提交"
+              issue.opened.title: "新Issue"
+              issue.closed.title: "Issue已关闭"
+              comment.title: "新评论"
+              fork.title: "仓库被Fork"
+              star.title: "仓库被Star"
+              workflow.title: "工作流状态"
+              create.title: "新建分支/标签"
+              delete.title: "删除分支/标签"
+              release.title: "新版本发布"
+          EOL
+        
+      - name: Send Feishu notification
+        uses: your-org/feishu-action@v0.1.2
         with:
-          feishu_webhook: ${{ secrets.FEISHU_WEBHOOK }}
-          config_path: .github/feishu/config.yml
+          webhook: ${{ secrets.FEISHU_WEBHOOK }}
+          config: .github/feishu-config.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 2. 在 `.github/feishu/config.yml` 配置通知模板、风格、语言等：
