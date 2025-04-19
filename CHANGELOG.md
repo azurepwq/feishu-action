@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+### [0.1.3](https://github.com/azurepwq/feishu-action/compare/v0.1.2...v0.1.3) (2025-04-19)
+
+
+### 📝 Documentation
+
+* fix typos ([9a55f4b](https://github.com/azurepwq/feishu-action/commit/9a55f4bca2759c3e4c471762a5bf26c2c16342f8))
+
 ### [0.1.2](https://github.com/azurepwq/feishu-action/compare/v0.1.1...v0.1.2) (2025-04-19)
 
 
