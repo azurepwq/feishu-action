@@ -111,7 +111,7 @@ jobs:
           EOL
         
       - name: Send Feishu notification
-        uses: azurepwq/feishu-action@v0.1.2
+        uses: azurepwq/feishu-action@main
         with:
           feishu_webhook: ${{ secrets.FEISHU_WEBHOOK }}
           config_path: .github/feishu/config.yml
