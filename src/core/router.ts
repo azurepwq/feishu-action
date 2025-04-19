@@ -14,7 +14,7 @@ import * as forkHandler from '../events/fork';
 import * as starHandler from '../events/star';
 
 interface HandleEventOptions {
-  github: any;
+  github: typeof import('@actions/github');
   context: GithubContext;
   config: FeishuConfig;
   notifier: Notifier;

@@ -9,7 +9,7 @@ const mockedFs = fs as jest.Mocked<typeof fs>;
 
 describe('getLocale', () => {
   // 不再需要 __dirname polyfill，使用 process.cwd() 代替
-  const basePath = path.resolve(process.cwd(), 'locales/en-US.json');
+  const _basePath = path.resolve(process.cwd(), 'locales/en-US.json');
   
   afterEach(() => {
     jest.resetAllMocks();
@@ -17,14 +17,14 @@ describe('getLocale', () => {
 
   it('should load default locale', async () => {
     mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readFileSync.mockReturnValue('{"hello":"world"}' as any);
+    mockedFs.readFileSync.mockReturnValue(Buffer.from('{"hello":"world"}'));
     const locale = await getLocale('en-US');
     expect(locale.hello).toBe('world');
   });
 
   it('should merge custom locale', async () => {
     mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readFileSync.mockReturnValue('{"hello":"world"}' as any);
+    mockedFs.readFileSync.mockReturnValue(Buffer.from('{"hello":"world"}'));
     const locale = await getLocale('en-US', { 'en-US': { hi: 'there' } });
     expect(locale.hello).toBe('world');
     expect(locale.hi).toBe('there');

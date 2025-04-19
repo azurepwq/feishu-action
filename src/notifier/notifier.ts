@@ -27,7 +27,7 @@ export class Notifier {
     const emoji = options.emoji || this.getEmoji(style);
     const atList = options.at || this.config.default.at || [];
     const content = `${emoji} ${options.title}\n${options.text}`;
-    const atText = atList.length > 0 ? atList.map(id => `<at user_id=\"${id}\"></at>`).join(' ') : '';
+    const atText = atList.length > 0 ? atList.map(id => `<at user_id="${id}"></at>`).join(' ') : '';
     const msg = {
       msg_type: 'text',
       content: {
@@ -52,7 +52,7 @@ export class Notifier {
     }
   }
 
-  renderTemplate(template: string, context: any): string {
+  renderTemplate(template: string, context: Record<string, unknown>): string {
     try {
       return Mustache.render(template, context);
     } catch (err) {

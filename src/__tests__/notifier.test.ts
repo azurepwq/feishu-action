@@ -60,9 +60,10 @@ describe('Notifier', () => {
   });
 
   it('should throw on axios error', async () => {
-    const axiosError = new Error('network error') as any;
-    axiosError.isAxiosError = true;
-    axiosError.code = 'ECONNREFUSED';
+    const axiosError = Object.assign(new Error('network error'), {
+      isAxiosError: true,
+      code: 'ECONNREFUSED'
+    });
     mockedAxios.post.mockRejectedValueOnce(axiosError);
     mockedAxios.isAxiosError.mockReturnValueOnce(true);
     

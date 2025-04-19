@@ -1,7 +1,7 @@
 export interface GithubContext {
   eventName: string;
-  payload: any;
-  [key: string]: any;
+  payload: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface FeishuConfig {
@@ -10,8 +10,11 @@ export interface FeishuConfig {
     style: string;
     at?: string[];
   };
-  [event: string]: any;
-  locales?: Record<string, any>;
+  pr?: Record<string, Record<string, unknown>>;
+  push?: Record<string, unknown>;
+  templates?: Record<string, string>;
+  [event: string]: unknown;
+  locales?: Record<string, Record<string, string>>;
 }
 
 export type LocaleDict = Record<string, string>; 

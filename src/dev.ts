@@ -22,7 +22,7 @@ switch (runMode) {
   case 'mock':
     console.log('🔄 使用模拟模式 (mock) - 请求将被拦截，模拟成功响应');
     // 直接替换 axios.post 方法
-    axios.post = ((url: string, data: any) => {
+    axios.post = ((url: string, data: Record<string, unknown>) => {
       console.log(`📤 模拟发送到 ${url}:\n`, JSON.stringify(data, null, 2));
       return Promise.resolve({
         data: { StatusCode: 0, StatusMessage: 'Success (mocked)' }
@@ -117,15 +117,18 @@ process.env.NODE_ENV = 'development';
 fs.writeFileSync('/tmp/mock-event.json', JSON.stringify(mockPrEvent.payload), 'utf8');
 
 // 强行覆盖 github.context，确保 payload 正确
-(github as any).context = {
-  ...github.context,
-  eventName: mockPrEvent.eventName,
-  payload: mockPrEvent.payload
-};
+Object.defineProperty(github, 'context', {
+  value: {
+    ...github.context,
+    eventName: mockPrEvent.eventName,
+    payload: mockPrEvent.payload
+  },
+  writable: true
+});
 
 // 打印更明确的调试信息
 console.log(`✅ 开发环境准备完成，开始执行...`);
 console.log(`🔧 模拟事件: ${mockPrEvent.eventName}, 动作: ${mockPrEvent.payload.action}`);
 run().catch(err => {
   console.error('❌ 开发运行出错:', err);
-}); 
+});

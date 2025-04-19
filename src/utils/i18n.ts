@@ -14,7 +14,7 @@ const getDirName = () => {
   }
 };
 
-export async function getLocale(language: string, customLocales?: Record<string, any>): Promise<LocaleDict> {
+export async function getLocale(language: string, customLocales?: Record<string, Record<string, string>>): Promise<LocaleDict> {
   let locale: LocaleDict = {};
   // 1. 加载默认 locales 文件
   const localePath = path.resolve(getDirName(), 'locales', `${language}.json`);
