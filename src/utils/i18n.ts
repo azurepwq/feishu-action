@@ -34,4 +34,11 @@ export async function getLocale(language: string, customLocales?: Record<string,
     throw new ConfigError(`Locale not found for language: ${language}`);
   }
   return locale;
+}
+
+export function translate(key: string, dict: Record<string, string>): string {
+  if (!dict[key]) {
+    throw new Error('Key not found');
+  }
+  return dict[key];
 } 
