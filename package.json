@@ -1,6 +1,6 @@
 {
   "name": "feishu-action",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "GitHub Action for sending customizable notifications to Feishu groups on various GitHub events, with i18n, templates, and style support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
