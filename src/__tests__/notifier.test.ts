@@ -112,74 +112,76 @@ describe('Notifier', () => {
     const config1: FeishuConfig = { default: { language: 'zh', style: 'cute' } };
     const locale1: LocaleDict = {};
     const notifier1 = new Notifier('webhook1', config1, locale1);
-    expect((notifier1 as any).webhook).toBe('webhook1');
-    expect((notifier1 as any).config).toBe(config1);
-    expect((notifier1 as any).locale).toBe(locale1);
+    // Use type assertion to access private fields for test purposes
+    expect((notifier1 as unknown as { webhook: string }).webhook).toBe('webhook1');
+    expect((notifier1 as unknown as { config: FeishuConfig }).config).toBe(config1);
+    expect((notifier1 as unknown as { locale: LocaleDict }).locale).toBe(locale1);
 
     const config2: FeishuConfig = { default: { language: 'en', style: 'engineer', at: [] } };
     const locale2: LocaleDict = { hello: 'world' };
     const notifier2 = new Notifier('webhook2', config2, locale2);
-    expect((notifier2 as any).webhook).toBe('webhook2');
-    expect((notifier2 as any).config).toBe(config2);
-    expect((notifier2 as any).locale).toBe(locale2);
+    expect((notifier2 as unknown as { webhook: string }).webhook).toBe('webhook2');
+    expect((notifier2 as unknown as { config: FeishuConfig }).config).toBe(config2);
+    expect((notifier2 as unknown as { locale: LocaleDict }).locale).toBe(locale2);
   });
 
   it('should handle empty config gracefully', () => {
     const emptyConfig: FeishuConfig = { default: { language: '', style: '' } };
     const emptyLocale: LocaleDict = {};
     const notifier = new Notifier('webhook', emptyConfig, emptyLocale);
-    expect((notifier as any).webhook).toBe('webhook');
-    expect((notifier as any).config).toBe(emptyConfig);
-    expect((notifier as any).locale).toBe(emptyLocale);
+    expect((notifier as unknown as { webhook: string }).webhook).toBe('webhook');
+    expect((notifier as unknown as { config: FeishuConfig }).config).toBe(emptyConfig);
+    expect((notifier as unknown as { locale: LocaleDict }).locale).toBe(emptyLocale);
+  });
+
+
+  describe('getLocale', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should return locale if exists', async () => {
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
+      const result = await getLocale('en');
+      expect(result).toEqual({ hello: 'world' });
+    });
+
+    it('should merge customLocales', async () => {
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
+      const result = await getLocale('en', { en: { hi: 'there' } });
+      expect(result).toEqual({ hello: 'world', hi: 'there' });
+    });
+
+    it('should throw if locale file and customLocales are missing', async () => {
+      jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+      await expect(getLocale('zh')).rejects.toThrow('Locale not found for language: zh');
+    });
+
+    it('should throw ConfigError if file read fails', async () => {
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'readFileSync').mockImplementation(() => { throw new Error('fail'); });
+      await expect(getLocale('en')).rejects.toThrow('Failed to load locale file: fail');
+    });
+
+    it('should correctly merge custom locales', async () => {
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
+      const result = await getLocale('en', { en: { hello: 'everyone', hi: 'there' } });
+      expect(result).toEqual({ hello: 'everyone', hi: 'there' });
+    });
+  });
+
+  describe('translate', () => {
+    it('should return translation if key exists', () => {
+      const dict = { hello: 'world' };
+      expect(translate('hello', dict)).toBe('world');
+    });
+
+    it('should throw if key does not exist', () => {
+      const dict = { hello: 'world' };
+      expect(() => translate('bye', dict)).toThrow('Key not found');
+    });
   });
 });
-
-describe('getLocale', () => {
-  beforeEach(() => {
-    jest.resetAllMocks();
-  });
-
-  it('should return locale if exists', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-    jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
-    const result = await getLocale('en');
-    expect(result).toEqual({ hello: 'world' });
-  });
-
-  it('should merge customLocales', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-    jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
-    const result = await getLocale('en', { en: { hi: 'there' } });
-    expect(result).toEqual({ hello: 'world', hi: 'there' });
-  });
-
-  it('should throw if locale file and customLocales are missing', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
-    await expect(getLocale('zh')).rejects.toThrow('Locale not found for language: zh');
-  });
-
-  it('should throw ConfigError if file read fails', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-    jest.spyOn(fs, 'readFileSync').mockImplementation(() => { throw new Error('fail'); });
-    await expect(getLocale('en')).rejects.toThrow('Failed to load locale file: fail');
-  });
-
-  it('should correctly merge custom locales', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-    jest.spyOn(fs, 'readFileSync').mockReturnValue('{"hello":"world"}');
-    const result = await getLocale('en', { en: { hello: 'everyone', hi: 'there' } });
-    expect(result).toEqual({ hello: 'everyone', hi: 'there' });
-  });
-});
-
-describe('translate', () => {
-  it('should return translation if key exists', () => {
-    const dict = { hello: 'world' };
-    expect(translate('hello', dict)).toBe('world');
-  });
-
-  it('should throw if key does not exist', () => {
-    const dict = { hello: 'world' };
-    expect(() => translate('bye', dict)).toThrow('Key not found');
-  });
-}); 
