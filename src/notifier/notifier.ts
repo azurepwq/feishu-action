@@ -6,7 +6,7 @@ import { NotifyError, TemplateError } from '../utils/errors';
 interface NotifyOptions {
   title: string;
   text: string;
-  at?: string[];
+  at?: string[] | undefined;
   style?: string;
   emoji?: string;
 }
